@@ -1,0 +1,254 @@
+:root {
+    --ct-ls: #f5f2f0; /*light shades*/
+    --ct-la: #bac4d5; /*light accent*/
+    --ct-mb: #78b1e8; /*main brand*/
+    --ct-da: #7c7cf0; /*dark accent*/
+    --ct-ds: #1f21ef; /*dark shades*/
+}
+
+.bg-mb {
+    background-color: var(--ct-mb);
+}
+
+body {
+    background-color: var(--bs-gray-100) !important;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    /*background-color: var(--bs-blue) !important;*/
+    /*padding-top: 2%;*/
+}
+
+/*.upper_header {*/
+    /*background-color: white;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+    /*padding: 20px 20%;*/
+/*}*/
+
+#logo {
+    width: 400px;
+}
+
+.login_button {
+    margin-left: auto;
+    cursor: pointer;
+    /*color: black;*/
+}
+
+.login_button a {
+    color: black;
+    text-decoration: none;
+}
+
+.login_button a:hover {
+    color: var(--ct-mb);
+}
+
+/*.nav_bar {*/
+/*    padding: 0 20%;*/
+/*}*/
+
+/*.nav_bar ul {*/
+/*    list-style-type: none;*/
+/*    display: flex;*/
+/*    margin: 0;*/
+/*}*/
+
+/*.nav_bar ul li {*/
+    /*flex-grow: 1;*/
+/*    width: 100%;*/
+/*    text-align: center;*/
+/*    color: black;*/
+/*    cursor: pointer;*/
+/*    font-size: 24px;*/
+/*    padding: 20px;*/
+/*}*/
+
+/*.nav_bar ul li:hover {*/
+/*    color: var(--ct-mb);*/
+/*}*/
+
+.selected {
+    /*color: var(--ct-mb) !important;*/
+    font-weight: bold;
+    /*text-decoration: underline;*/
+}
+
+#wrapper {
+    position: relative;
+    min-height: 100vh;
+}
+
+.workplace {
+    background-color: var(--bs-white);
+    min-height: 100vh;
+}
+
+.mini_workplace {
+    background-color: var(--bs-white);
+    margin: 0 37.5%;
+    padding: 1%;
+}
+
+.spacer {
+    display: block;
+    height: 15vh;
+}
+
+#map {
+    height: 600px;
+}
+
+.check_in {
+    width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#code, #gps {
+    width: 200px;
+    cursor: pointer;
+    /*margin: 0 auto;*/
+}
+
+.check_in_code div {
+    width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.check_in_code h1 {
+    color: var(--ct-mb);
+    font-size: 50px;
+}
+
+.check_in_code input[type="text"] {
+    width: 200px;
+    height: 25px;
+    font-size: 18px;
+}
+
+.check_in_code button {
+    display: block;
+    color: white;
+    width: 100px;
+    background-color: var(--ct-mb);
+    border: none;
+    margin: 10px auto;
+    padding: 10px;
+}
+
+/*.check_in button {*/
+/*    color: white;*/
+/*    background-color: var(--ct-mb);*/
+/*    border: none;*/
+/*    padding: 10px;*/
+/*}*/
+
+.fancy_table {
+    border-collapse: collapse;
+    margin: 10px auto;
+    width: 1000px;
+    border-radius: 10px 10px 0 0 !important;
+    border-bottom: 3px solid teal;
+}
+
+/*.fancy_table thead tr {*/
+/*    border-top-left-radius: 5px;*/
+/*    border-top-right-radius: 5px;*/
+/*}*/
+
+.fancy_table thead th {
+    padding: 10px;
+    color: white;
+    background-color: teal;
+    border-bottom: 1px solid gray;
+    text-align: left;
+}
+
+.fancy_table tbody tr td {
+    padding: 10px;
+    border-bottom: 1px solid gray;
+}
+
+.fancy_table tbody tr:nth-of-type(odd) {
+    background-color: lightgray;
+}
+
+.profile {
+    display: flex;
+    width: 1000px;
+    border-radius: 10px;
+    margin: 0 auto;
+}
+
+.general {
+    width: 30%;
+    padding: 20px;
+    text-align: center;
+    background-color: green;
+    color: white;
+    border-top-left-radius:10px;
+    border-bottom-left-radius: 10px;
+    background: linear-gradient(to top left, #00827f, #66ddaa);
+}
+
+.info {
+    /*display: flex;*/
+    width: 70%;
+    padding: 20px;
+    background-color: whitesmoke;
+    border-top-right-radius:10px;
+    border-bottom-right-radius: 10px;
+}
+
+.info_wrapper {
+    display: flex;
+}
+
+.left_box {
+    padding: 20px;
+    width: 35%;
+}
+
+.right_box {
+    padding: 20px;
+    width: 65%;
+}
+
+#avatar {
+    width: 150px;
+}
+
+.login a, .register a {
+    color: gray;
+    text-decoration: none;
+}
+
+.login .form {
+    /*width: 100%;*/
+    /*margin: 0 auto;*/
+}
+
+.login h1, .register h1 {
+    color: var(--ct-mb);
+    font-size: 48px;
+    text-align: center;
+}
+
+.register_help p, .login_help p {
+    text-align: center;
+    /*margin: 0;*/
+}
+
+footer {
+    width: 98%;
+    position: absolute;
+    bottom: 0;
+    background-color: var(--ct-mb);
+    color: white;
+    padding: 1%;
+}
