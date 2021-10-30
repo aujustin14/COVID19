@@ -11,8 +11,8 @@ CREATE TABLE USERS(
     PRIMARY KEY(user_id)
 );
 
-INSERT INTO USERS VALUES (null, "John", "Doe", "JohnDoe12", "asdf1234", "johndoe@example.com", "1990-01-13");
-INSERT INTO USERS VALUES (null, "Jane", "Doe", "JaneDoe34", "zxcv5678", "janedoe@example.com", "2000-02-14");
+INSERT INTO USERS VALUES (null, "John", "Doe", "JohnDoe12", "$2b$10$ekOTW0VMx6wFboHfC0pYs.JaMCZo84jLRlPgnpAteUGGLWNkKhGN.", "johndoe@example.com", "1990-01-13"); -- Password: asdf1234
+INSERT INTO USERS VALUES (null, "Jane", "Doe", "JaneDoe34", "$2b$10$chZ.asROLamnaR2MKx2qAeOAP0ERK3pEb8gVT8Rqf9KU9xCPpCeAG", "janedoe@example.com", "2000-02-14"); -- Password: zxcv5678
 
 CREATE TABLE VENUES(
     venue_id INT UNIQUE AUTO_INCREMENT,
@@ -46,7 +46,7 @@ CREATE TABLE CHECK_IN(
     check_in_id INT UNIQUE AUTO_INCREMENT,
     user_id INT,
     venue_id INT,
-    check_in_date DATETIME,
+    check_in_date DATE,
     PRIMARY KEY(check_in_id),
     FOREIGN KEY(user_id) REFERENCES USERS(user_id),
     FOREIGN KEY(venue_id) REFERENCES VENUES(venue_id)

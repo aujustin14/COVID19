@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <title>COVID19 - Login</title>
+        <title>COVID19 - Log In</title>
 
         <!--Meta tags-->
         <meta charset="utf-8">
@@ -21,8 +21,7 @@
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
 
         <!--Google API-->
-        <script src="https://apis.google.com/js/platform.js" async defer></script>
-        <meta name="google-signin-client_id" content="1056640990626-67ihmlsp4641f2gb9mjufede75hch3hi.apps.googleusercontent.com">
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
     </head>
 
     <body>
@@ -30,38 +29,54 @@
             <div class="spacer"></div>
             <div class="mini_workplace">
                 <div class="login">
-                    <p><a href="index.html"><i class="bi bi-chevron-left"></i> Back</a></p>
+                    <p class="text-muted"><a class="text-reset text-decoration-none" href="index.html"><i class="bi bi-chevron-left"></i> Back</a></p>
+                    <h1><i class="bi bi-box-arrow-in-left"></i> Log In</h1>
                     <div class="form">
-                        <h1><i class="bi bi-box-arrow-in-left"></i> Login</h1>
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" v-model="current_user.username">
-                            <p class="text-danger" v-if="login_status.username===1"><i class="bi bi-x"></i> Please enter your username.</p>
+                        <div class="api d-grid gap-2">
+                            <div id="g_id_onload"
+                                data-client_id="1056640990626-67ihmlsp4641f2gb9mjufede75hch3hi.apps.googleusercontent.com"
+                                data-context="signin"
+                                data-ux_mode="popup"
+                                data-login_uri="/log_in_user"
+                                data-auto_prompt="false">
+                            </div>
+                            <div class="g_id_signin mx-auto"
+                                data-type="standard"
+                                data-shape="rectangular"
+                                data-theme="outline"
+                                data-text="continue_with"
+                                data-size="medium"
+                                data-logo_alignment="left">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" v-model="current_user.password">
-                            <p class="text-danger" v-if="login_status.password===1"><i class="bi bi-x"></i> Please enter your password.</p>
+                        <hr>
+                        <div class="standard">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" v-model="current_user.username">
+                                <p class="text-danger" v-if="log_in_status.username===1"><i class="bi bi-x"></i> Please enter your username.</p>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" v-model="current_user.password">
+                                <p class="text-danger" v-if="log_in_status.password===1"><i class="bi bi-x"></i> Please enter your password.</p>
+                            </div>
+                            <div class="mb-3 d-grid gap-2">
+                                <button class="btn btn-primary" type="button" v-on:click="log_in()">Log In</button>
+                                <p class="text-success" v-if="log_in_status.username===0&&log_in_status.password===0&&log_in_status.server===0"><i class="bi bi-check"></i> You have successfully logged in.</p>
+                                <p class="text-danger" v-if="log_in_status.username===2||log_in_status.password===2"><i class="bi bi-x"></i> The username and/or password are incorrect. Please try again.</p>
+                                <p class="text-danger" v-if="log_in_status.server===1"><i class="bi bi-x"></i> There is a problem with the server. Please try again later.</p>
+                            </div>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary" type="button" v-on:click="login()">Login</button>
-                            <p class="text-success" v-if="login_status.username===0&&login_status.password===0&&login_status.server===0"><i class="bi bi-check"></i> You have successfully logged in.</p>
-                            <p class="text-danger" v-if="login_status.username===2||login_status.password===2"><i class="bi bi-x"></i> Incorrect username or password. Please try again.</p>
-                            <p class="text-danger" v-if="login_status.server===1"><i class="bi bi-x"></i> There is a problem with the server. Please try again later.</p>
-                        </div>
-                        <div class="g-signin2" data-onsuccess="onSignIn"></div>
-                        <!--<a class="nav-link" aria-current="page" href="#" onclick="logout()">Log out</a>-->
-                        <!--<a href="#" onclick="signOut();">Sign out</a>-->
                     </div>
                 </div>
                 <hr>
                 <div class="register_help">
-                    <p>Don't have an account yet?</p>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" type="button">Register Now</button>
-                    </div>
+                    <p class="text-center">Don't have an account yet?</p>
+                    <p class="text-center text-primary"><a class="text-reset text-decoration-none" href="sign_up.html">Sign Up Now</a></p>
                 </div>
             </div>
+            <div class="spacer"></div>
         </div>
     </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <title>COVID19</title>
+        <title>COVID19 Tracker</title>
 
         <!--Meta tags-->
         <meta charset="utf-8">
@@ -25,8 +25,7 @@
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
 
         <!--Google API-->
-        <script src="https://apis.google.com/js/platform.js" async defer></script>
-        <meta name="google-signin-client_id" content="1056640990626-67ihmlsp4641f2gb9mjufede75hch3hi.apps.googlelogged_in_usercontent.com">
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
     </head>
 
     <body>
@@ -34,12 +33,14 @@
             <header>
                 <nav class="navbar navbar-expand-lg navbar-light bg-mb">
                     <div class="container">
-                        <a class="navbar-brand" href="#">Logo</a>
+                        <a class="navbar-brand" href="#">COVID19 Tracker</a>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                                 <li class="nav-item">
-                                    <a class="nav-link" aria-current="page" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
-                                    <div class="g-signin2" style="display:none"></div>
+                                    <a class="nav-link" aria-current="page" href="#"><i class="bi bi-person-fill"></i> {{logged_in_user.username}}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" aria-current="page" href="#" v-on:click="log_out()"><i class="bi bi-box-arrow-right"></i> Log Out</a>
                                 </li>
                             </ul>
                         </div>
@@ -56,14 +57,14 @@
                                 <li class="nav-item" v-on:click="selected_tab='Homepage'" v-bind:class="{selected: selected_tab==='Homepage'}">
                                     <a class="nav-link" href="#"><i class="bi bi-house"></i> Home</a>
                                 </li>
-                                <li class="nav-item" v-on:click="selected_tab='Check_in'" v-bind:class="{selected: selected_tab==='Check_in'}">
-                                    <a class="nav-link" href="#">Check-in</a>
+                                <li class="nav-item" v-on:click="selected_tab='Check_in', clear_inputted_code(), reset_check_in_status()" v-bind:class="{selected: selected_tab==='Check_in'}">
+                                    <a class="nav-link" href="#"><i class="bi bi-check-square"></i> Check In</a>
                                 </li>
                                 <li class="nav-item" v-on:click="selected_tab='History', get_history()" v-bind:class="{selected: selected_tab==='History'}">
-                                    <a class="nav-link" href="#">History</a>
+                                    <a class="nav-link" href="#"><i class="bi bi-clock-history"></i> History</a>
                                 </li>
-                                <li class="nav-item" v-on:click="selected_tab='Profile', user_profile()" v-bind:class="{selected: selected_tab==='Profile'}">
-                                    <a class="nav-link" href="#">Profile</a>
+                                <li class="nav-item" v-on:click="selected_tab='Profile', reset_edit_status(), reset_change_status()" v-bind:class="{selected: selected_tab==='Profile'}">
+                                    <a class="nav-link" href="#"><i class="bi bi-person-badge"></i> Profile</a>
                                 </li>
                             </ul>
                         </div>
@@ -75,149 +76,222 @@
 
             <div class="workplace container">
                 <div class="homepage" v-show="selected_tab==='Homepage'">
+                    <h3 class="text-center">Map of Hotspots</h3>
                     <div id="map"></div>
                 </div>
 
                 <div class="check_in" v-if="selected_tab==='Check_in'">
-                    <img src="images/passwordicon.png" alt="Code" id="code" v-on:click="selected_tab='Check_in Code'">
-                    <img src="images/mapicon.png" alt="GPS" id="gps">
-                </div>
-
-                <div class="check_in_code" v-if="selected_tab==='Check_in Code'">
-                    <div>
-                        <h1>Check_in with Code</h1>
-                        <label>Code:</label>
-                        <input type="text" name="input_code" id="input_code" placeholder="Enter your code" v-model="inputted_code.content">
-                        <button v-on:click="submit_code()">Submit</button>
-                        <p id="check_in_help"></p>
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12 mx-auto">
+                            <h3 class="text-center">Check In with Code</h3>
+                            <p class="text-center text-muted">Recently been somewhere? Log it here!</p>
+                            <div class="form">
+                                <div class="mb-3">
+                                    <label for="code" class="form-label">Code</label>
+                                    <input type="text" class="form-control" v-model="inputted_code.content">
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" type="button" v-on:click="submit_code()">Submit</button>
+                                    <p class="text-success" v-if="check_in_status.code===0&&check_in_status.server===0"><i class="bi bi-check"></i> You have successfully checked in.</p>
+                                    <p class="text-danger" v-if="check_in_status.code===1"><i class="bi bi-x"></i> The code is incorrect. Please enter a correct code.</p>
+                                    <p class="text-danger" v-if="check_in_status.server===1"><i class="bi bi-x"></i> There is a problem with the server. Please try again later.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="history" v-if="selected_tab==='History'">
-                    <table class="fancy_table">
-                        <thead>
-                            <tr>
-                                <th v-for="current_header in table_headers">{{current_header}}</th>
-                            </tr>
-                        </thead>
+                    <div v-if="table_rows.length===0">
+                        <h1 class="display-1 text-center text-muted"><i class="bi bi-exclamation-circle"></i></h1>
+                        <p class="text-center text-muted">You don't have any logged activity yet.<br>Please check back later.</p>
+                    </div>
+                    <div v-if="table_rows.length>0">
+                        <h3 class="text-center">Your History</h3>
+                        <table class="table table-striped">
+                            <thead class="table-mb">
+                                <tr>
+                                    <th v-for="current_header in table_headers">{{current_header}}</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            <tr v-for="current_row in table_rows">
-                                <td v-for="item in current_row">{{item}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div v-if="selected_tab==='Profile'">
-                    <div class="profile">
-                        <div class="general">
-                            <img src="images/avatar.png" alt="Avatar" id="avatar">
-                            <h2>{{logged_in_user.first_name}} {{logged_in_user.family_name}}</h2>
-                            <p>Username</p>
-                            <button type="button" class="btn btn-primary" v-on:click="service='Profile'">Profile</button>
-                            <button type="button" class="btn btn-primary" v-on:click="service='Edit'">Edit</button>
-                        </div>
-
-                        <div class="info" v-if="service==='Profile'">
-                            <div class="info_wrapper">
-                                <div class="left_box">
-                                    <div class="first_name">
-                                        <h3>First name</h3>
-                                        <p>{{logged_in_user.first_name}}</p>
-                                    </div>
-
-                                    <div class="dob">
-                                        <h3>DOB</h3>
-                                        <p>{{logged_in_user.dob}}</p>
-                                    </div>
-
-                                    <div class="email">
-                                        <h3>Email</h3>
-                                        <p>{{logged_in_user.email}}</p>
-                                    </div>
-                                </div>
-
-                                <div class="right_box">
-                                    <div class="last_name">
-                                        <h3>Last name</h3>
-                                        <p>{{logged_in_user.last_name}}</p>
-                                    </div>
-
-                                    <!--<div class="address">-->
-                                    <!--    <h3>Address</h3>-->
-                                    <!--    <p>{{logged_in_user.address}}</p>-->
-                                    <!--</div>-->
-
-                                    <div class="logged_in_username">
-                                        <h3>Username</h3>
-                                        <p>{{logged_in_user.username}}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!--///////////////////////////////////////////////-->
-                        <div class="info" v-if="service==='Edit'">
-                            <div class="info_wrapper">
-                                <div class="left_box">
-                                    <div class="first_name">
-                                        <h3>First name</h3>
-                                        <input type="text" placeholder="First name" v-model="logged_in_user.first_name">
-                                    </div>
-
-                                    <div class="dob">
-                                        <h3>DOB</h3>
-                                        <input type="date" v-model="logged_in_user.dob">
-                                    </div>
-
-                                    <div class="email">
-                                        <h3>Email</h3>
-                                        <input type="text" placeholder="Email" v-model="logged_in_user.email">
-                                    </div>
-                                </div>
-
-                                <div class="right_box">
-                                    <div class="family_name">
-                                        <h3>Last name</h3>
-                                        <input type="text" placeholder="Family name" v-model="logged_in_user.last_name">
-                                    </div>
-
-                                    <!--<div class="address">-->
-                                    <!--    <h3>Address</h3>-->
-                                    <!--    <input type="text" placeholder="Address" v-model="logged_in_user.address">-->
-                                    <!--</div>-->
-
-                                    <div class="logged_in_username">
-                                        <h3>Username</h3>
-                                        <input type="text" placeholder="Email" v-model="logged_in_user.username">
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-primary" v-on:click="update_user_data()">Submit</button>
-                            <p class="text-success" id="edit_help"></p>
-                        </div>
+                            <tbody>
+                                <tr v-for="current_row in table_rows">
+                                    <td v-for="item in current_row">{{item}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!--<div class="login" v-if="selected_tab==='Login'">-->
-                <!--    <div class="form">-->
-                <!--        <h1>Loging In</h1>-->
-                <!--        <label>logged_in_username</label>-->
-                <!--        <input type="text" placeholder="logged_in_username">-->
-                <!--        <label>Password</label>-->
-                <!--        <input type="password" placeholder="Password">-->
-                <!--        <button>Login</button>-->
-                <!--    </div>-->
-                <!--</div>-->
+                <div class="profile" v-if="selected_tab==='Profile'">
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12">
+                            <div class="profile_card">
+                                <img class="mb-3" src="images/avatar.png" alt="Avatar" id="avatar">
+                                <h2>{{logged_in_user.username}}</h2>
+                                <p>{{logged_in_user.first_name}} {{logged_in_user.last_name}}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-8 col-sm-12">
+                            <div class="profile_details">
+                                <div v-if="profile_mode===0">
+                                    <div class="mb-3">
+                                        <button class="btn btn-outline-dark" type="button" v-on:click="profile_mode=1, reset_edit_status(), reset_change_status()"><i class="bi bi-pencil"></i> Edit Profile</button>
+                                        <button class="btn btn-outline-dark" type="button" v-on:click="profile_mode=2, reset_edit_status(), reset_change_status()"><i class="bi bi-key"></i> Change Password</button>
+                                        <p class="text-success" v-if="edit_status.name===0&&edit_status.username===0&&edit_status.email===0&&edit_status.dob===0&&edit_status.password===0&&edit_status.server===0"><i class="bi bi-check"></i> You have successfully edited your profile.</p>
+                                        <p class="text-success" v-if="change_status.current_password===0&&change_status.new_password===0&&change_status.server===0"><i class="bi bi-check"></i> You have successfully changed your password.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h3>Name</h3>
+                                        <p>{{logged_in_user.first_name}} {{logged_in_user.last_name}}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h3>Username</h3>
+                                        <p>{{logged_in_user.username}}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h3>Email</h3>
+                                        <p>{{logged_in_user.email}}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h3>Date of Birth</h3>
+                                        <p>{{logged_in_user.dob_day}}/{{logged_in_user.dob_month}}/{{logged_in_user.dob_year}}</p>
+                                    </div>
+                                </div>
+                                <div v-if="profile_mode===1">
+                                    <h1 class="text-center text-mb"><i class="bi bi-pencil-fill"></i> Edit Profile</h1>
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-md-6 col-sm-12">
+                                                <label for="first_name" class="form-label">First Name</label>
+                                                <input type="text" class="form-control" v-model="edited_user.first_name">
+                                            </div>
+                                            <div class="col-md-6 col-sm-12">
+                                                <label for="last_name" class="form-label">Last Name</label>
+                                                <input type="text" class="form-control" v-model="edited_user.last_name">
+                                            </div>
+                                        </div>
+                                        <p class="text-danger" v-if="edit_status.name===1"><i class="bi bi-x"></i> Please enter your full name.</p>
+                                        <p class="text-danger" v-if="edit_status.name===2"><i class="bi bi-x"></i> Please enter a shorter name.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" v-model="edited_user.username">
+                                        <p class="text-danger" v-if="edit_status.username===1"><i class="bi bi-x"></i> Please enter your username.</p>
+                                        <p class="text-danger" v-if="edit_status.username===2"><i class="bi bi-x"></i> Please enter a longer username.</p>
+                                        <p class="text-danger" v-if="edit_status.username===3"><i class="bi bi-x"></i> Please enter a shorter username.</p>
+                                        <p class="text-danger" v-if="edit_status.username===4"><i class="bi bi-x"></i> Username is already taken. Please try another username.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="text" class="form-control" v-model="edited_user.email">
+                                        <p class="text-danger" v-if="edit_status.email===1"><i class="bi bi-x"></i> Please enter your email.</p>
+                                        <p class="text-danger" v-if="edit_status.email===2"><i class="bi bi-x"></i> Please enter a valid email.</p>
+                                        <p class="text-danger" v-if="edit_status.email===3"><i class="bi bi-x"></i> Email is already taken. Please try another email.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="dob" class="form-label">Date of Birth</label>
+                                        <div class="row">
+                                            <div class="col-md-4 col-sm-12">
+                                                <select class="form-select" v-model="edited_user.dob_day">
+                                                    <option value="" disabled selected>Day</option>
+                                                    <option value="01">01</option>
+                                                    <option value="02">02</option>
+                                                    <option value="03">03</option>
+                                                    <option value="04">04</option>
+                                                    <option value="05">05</option>
+                                                    <option value="06">06</option>
+                                                    <option value="07">07</option>
+                                                    <option value="08">08</option>
+                                                    <option value="09">09</option>
+                                                    <option v-for="n in 21">{{n+10}}</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4 col-sm-12">
+                                                <select class="form-select" v-model="edited_user.dob_month">
+                                                    <option value="" disabled selected>Month</option>
+                                                    <option value="01">January</option>
+                                                    <option value="02">February</option>
+                                                    <option value="03">March</option>
+                                                    <option value="04">April</option>
+                                                    <option value="05">May</option>
+                                                    <option value="06">June</option>
+                                                    <option value="07">July</option>
+                                                    <option value="08">August</option>
+                                                    <option value="09">September</option>
+                                                    <option value="10">October</option>
+                                                    <option value="11">November</option>
+                                                    <option value="12">December</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4 col-sm-12">
+                                                <select class="form-select" v-model="edited_user.dob_year">
+                                                    <option value="" disabled selected>Year</option>
+                                                    <option v-for="n in 122">{{n + 1899}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <p class="text-danger" v-if="edit_status.dob===1"><i class="bi bi-x"></i> Please enter your full date of birth.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                                        <input type="password" class="form-control" v-model="edited_user.confirm_password">
+                                        <p class="text-danger" v-if="edit_status.password===1"><i class="bi bi-x"></i> Please confirm your password.</p>
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button class="btn btn-light" type="button" v-on:click="profile_mode=0, reset_edited_user()"><i class="bi bi-x"></i> Cancel</button>
+                                        <button class="btn btn-primary" type="button" v-on:click="update_user_data()"><i class="bi bi-check"></i> Submit</button>
+                                    </div>
+                                </div>
+                                <div v-if="profile_mode===2">
+                                    <h1 class="text-center text-mb"><i class="bi bi-key-fill"></i> Change Password</h1>
+                                    <div class="mb-3">
+                                        <label for="current_password" class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" v-model="changed_password.current_password">
+                                        <p class="text-danger" v-if="change_status.current_password===1"><i class="bi bi-x"></i> Please enter your current password.</p>
+                                        <p class="text-danger" v-if="change_status.current_password===2"><i class="bi bi-x"></i> Your password is incorrect. Please try again.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-md-6 col-sm-12">
+                                                <label for="new_password" class="form-label">New Password</label>
+                                                <input type="password" class="form-control" v-model="changed_password.new_password">
+                                            </div>
+                                            <div class="col-md-6 col-sm-12">
+                                                <label for="confirm_new_password" class="form-label">Confirm New Password</label>
+                                                <input type="password" class="form-control" v-model="changed_password.confirm_new_password">
+                                            </div>
+                                        </div>
+                                        <p class="text-danger" v-if="change_status.new_password===1"><i class="bi bi-x"></i> Please enter a new password.</p>
+                                        <p class="text-danger" v-if="change_status.new_password===2"><i class="bi bi-x"></i> Please enter a longer password.</p>
+                                        <p class="text-danger" v-if="change_status.new_password===3"><i class="bi bi-x"></i> Please confirm your password.</p>
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button class="btn btn-light" type="button" v-on:click="profile_mode=0, reset_changed_password()"><i class="bi bi-x"></i> Cancel</button>
+                                        <button class="btn btn-primary" type="button" v-on:click="update_user_password()"><i class="bi bi-check"></i> Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <!--<footer>-->
-            <!--    <p>Company Name</p>-->
-            <!--    <p>Company Address</p>-->
-            <!--    <p>Phone Number</p>-->
-            <!--    <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>-->
-            <!--</footer>-->
         </div>
+
+        <footer class="footer mt-auto py-3 bg-mb">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 col-sm-12 ms-auto">
+                        <h5 class="text-md-end text-sm-center">
+                            <a class="text-reset text-decoration-none" href="#"><i class="bi bi-facebook"></i></a>
+                            <a class="text-reset text-decoration-none" href="#"><i class="bi bi-instagram"></i></a>
+                            <a class="text-reset text-decoration-none" href="#"><i class="bi bi-twitter"></i></a>
+                            <a class="text-reset text-decoration-none" href="https://github.com/aujustin14/COVID19-Tracker-Website.git"><i class="bi bi-github"></i></a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </body>
 </html>

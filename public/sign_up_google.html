@@ -32,38 +32,7 @@
                     <p class="text-muted"><a class="text-reset text-decoration-none" href="index.html"><i class="bi bi-chevron-left"></i> Back</a></p>
                     <h1><i class="bi bi-pencil-square"></i> Sign Up</h1>
                     <div class="form">
-                        <div class="api d-grid gap-2">
-                            <div id="g_id_onload"
-                                data-client_id="1056640990626-67ihmlsp4641f2gb9mjufede75hch3hi.apps.googleusercontent.com"
-                                data-context="signin"
-                                data-ux_mode="popup"
-                                data-login_uri="/log_in_user"
-                                data-auto_prompt="false">
-                            </div>
-                            <div class="g_id_signin mx-auto"
-                                data-type="standard"
-                                data-shape="rectangular"
-                                data-theme="outline"
-                                data-text="signup_with"
-                                data-size="medium"
-                                data-logo_alignment="left">
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="mb-3">
-                            <div class="row">
-                                <div class="col-md-6 col-sm-12">
-                                    <label for="first_name" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" v-model="new_user.first_name">
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <label for="last_name" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" v-model="new_user.last_name">
-                                </div>
-                            </div>
-                            <p class="text-danger" v-if="sign_up_status.name===1"><i class="bi bi-x"></i> Please enter your full name.</p>
-                            <p class="text-danger" v-if="sign_up_status.name===2"><i class="bi bi-x"></i> Please enter a shorter name.</p>
-                        </div>
+
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" v-model="new_user.username">
@@ -84,15 +53,8 @@
                                 </div>
                             </div>
                             <p class="text-danger" v-if="sign_up_status.password===1"><i class="bi bi-x"></i> Please enter a password.</p>
-                            <p class="text-danger" v-if="sign_up_status.password===2"><i class="bi bi-x"></i> Please enter a longer password.</p>
-                            <p class="text-danger" v-if="sign_up_status.password===3"><i class="bi bi-x"></i> Please confirm your password.</p>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" v-model="new_user.email">
-                            <p class="text-danger" v-if="sign_up_status.email===1"><i class="bi bi-x"></i> Please enter your email.</p>
-                            <p class="text-danger" v-if="sign_up_status.email===2"><i class="bi bi-x"></i> Please enter a valid email.</p>
-                            <p class="text-danger" v-if="sign_up_status.email===3"><i class="bi bi-x"></i> Email is already taken. Please try another email.</p>
+                            <p class="text-danger" v-if="sign_up_status.password===2"><i class="bi bi-x"></i> Please confirm your password.</p>
+                            <p class="text-danger" v-if="sign_up_status.password===3"><i class="bi bi-x"></i> Please enter a longer password.</p>
                         </div>
                         <div class="mb-3">
                             <label for="dob" class="form-label">Date of Birth</label>
@@ -139,16 +101,11 @@
                             <p class="text-danger" v-if="sign_up_status.dob===1"><i class="bi bi-x"></i> Please enter your full date of birth.</p>
                         </div>
                         <div class="d-grid gap-2">
-                            <button class="btn btn-primary" type="button" v-on:click="sign_up()">Sign Up</button>
-                            <p class="text-success" v-if="sign_up_status.name===0&&sign_up_status.username===0&&sign_up_status.password===0&&sign_up_status.email===0&&sign_up_status.dob===0&&sign_up_status.server===0"><i class="bi bi-check"></i> You have successfully signed up.</p>
+                            <button class="btn btn-primary" type="button" v-on:click="sign_up_google()">Sign Up</button>
+                            <p class="text-success" v-if="sign_up_status.username===0&&sign_up_status.password===0&&sign_up_status.dob===0&&sign_up_status.server===0"><i class="bi bi-check"></i> You have successfully signed up.</p>
                             <p class="text-danger" v-if="sign_up_status.server===1"><i class="bi bi-x"></i> There is a problem with the server. Please try again later.</p>
                         </div>
                     </div>
-                </div>
-                <hr>
-                <div class="login_help">
-                    <p class="text-center">Already have an account?</p>
-                    <p class="text-center text-primary"><a class="text-reset text-decoration-none" href="log_in.html">Log In Now</a></p>
                 </div>
             </div>
             <div class="spacer"></div>

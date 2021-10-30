@@ -3,27 +3,61 @@ var vueinst = new Vue({
 
     data: {
         selected_tab: "Homepage",
-        table_headers: ["Number", "Venue", "Address", "Date and Time"],
+        table_headers: ["#", "Venue", "Address", "Date"],
         table_rows: [],
-        service: "Profile",
+        profile_mode: 0, // 0 = view profile, 1 = edit profile, 2 = change password
         inputted_code: {
             content: ""
+        },
+        check_in_status: {
+            code: -1, // -1 = initial value, 0 = fine, 1 = incorrect
+            server: -1, // -1 = initial value, 0 = fine, 1 = error
         },
         logged_in_user: {
             first_name: "",
             last_name: "",
-            dob: "",
+            username: "",
             email: "",
-            username: ""
+            dob_day: "",
+            dob_month: "",
+            dob_year: "",
+        },
+        edited_user: {
+            first_name: "",
+            last_name: "",
+            username: "",
+            email: "",
+            dob_day: "",
+            dob_month: "",
+            dob_year: "",
+            confirm_password: "",
+        },
+        edit_status: {
+            name: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = too long
+            username: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = too short, 3 = too long, 4 = not unique
+            email: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = not valid, 3 = not unique
+            dob: -1, // -1 = initial value, 0 = fine, 1 = empty
+            password: -1, // -1 = initial value, 0 = fine, 1 = not confirmed
+            server: -1, // -1 = initial value, 0 = fine, 1 = error
+        },
+        changed_password: {
+            current_password: "",
+            new_password: "",
+            confirm_new_password: "",
+        },
+        change_status: {
+            current_password: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = incorrect
+            new_password: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = not confirmed, 3 = too short
+            server: -1, // -1 = initial value, 0 = fine, 1 = error
         },
         current_user: {
             username: "",
-            password: ""
+            password: "",
         },
-        login_status: {
+        log_in_status: {
             username: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = incorrect
             password: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = incorrect
-            server: -1 // -1 = initial value, 0 = fine, 1 = error
+            server: -1, // -1 = initial value, 0 = fine, 1 = error
         },
         new_user: {
             first_name: "",
@@ -34,34 +68,125 @@ var vueinst = new Vue({
             email: "",
             dob_day: "",
             dob_month: "",
-            dob_year: ""
+            dob_year: "",
         },
-        registration_status: {
+        sign_up_status: {
             name: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = too long
             username: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = too short, 3 = too long, 4 = not unique
             password: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = not confirmed, 3 = too short
             email: -1, // -1 = initial value, 0 = fine, 1 = empty, 2 = not valid, 3 = not unique
-            server: -1 // -1 = initial value, 0 = fine, 1 = error
+            dob: -1, // -1 = initial value, 0 = fine, 1 = empty
+            server: -1, // -1 = initial value, 0 = fine, 1 = error
         },
         map_markers: []
     },
 
     methods: {
+        get_markers: function() {
+            var xhttp = new XMLHttpRequest();
+            var _this = this;
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let markers = JSON.parse(this.responseText);
+                    _this.map_markers = markers;
+
+                    for (let m of markers)
+                        m.marker = new mapboxgl.Marker()
+                            .setLngLat([m.longitude, m.latitude])
+                            .addTo(map);
+                }
+            };
+
+            xhttp.open("GET", "/retrieve_markers", true);
+            xhttp.send();
+        },
+
+        log_in: function() {
+            var xhttp = new XMLHttpRequest();
+            var _this = this;
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.responseText);
+                    _this.log_in_status = data;
+                    window.location.href = data.redirect_path;
+                }
+            };
+
+            xhttp.open("POST", "/log_in_user", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(JSON.stringify(this.current_user));
+        },
+
+        sign_up: function() {
+            var xhttp = new XMLHttpRequest();
+            var _this = this;
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.responseText);
+                    _this.sign_up_status = data;
+                    window.location.href = data.redirect_path;
+                }
+            };
+
+            xhttp.open("POST", "/sign_up_user", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(JSON.stringify(this.new_user));
+        },
+
+        sign_up_google: function() {
+            var xhttp = new XMLHttpRequest();
+            var _this = this;
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.responseText);
+                    _this.sign_up_status = data;
+                    window.location.href = data.redirect_path;
+                }
+            };
+
+            xhttp.open("POST", "/sign_up_google_user", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(JSON.stringify(this.new_user));
+        },
+
+        submit_code: function() {
+            var xhttp = new XMLHttpRequest();
+            var _this = this;
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.responseText);
+                    _this.check_in_status = data;
+                }
+            };
+
+            xhttp.open("POST", "/users/check_code", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(JSON.stringify(this.inputted_code));
+        },
+
+        clear_inputted_code: function() {
+            this.inputted_code.content = "";
+        },
+
+        reset_check_in_status: function() {
+            this.check_in_status.code = -1;
+            this.check_in_status.server = -1;
+        },
+
         get_history: function() {
             var xhttp = new XMLHttpRequest();
             var _this = this;
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                   // Typical action to be performed when the document is ready:
                     var data = JSON.parse(this.responseText);
                     _this.table_rows = [];
 
-                    for (var i=0; i<data.length; i++) {
+                    for (var i = 0; i < data.length; i++) {
                         var single_item = {
                             number: i + 1,
                             name: data[i].name,
-                            address: data[i].street_number + " " + data[i].street_name + ", "+data[i].city,
-                            date: data[i].check_in_date
+                            address: data[i].street_number + " " + data[i].street_name + ", "+ data[i].city,
+                            date: data[i].check_in_date.substr(8, 2) + "/" + data[i].check_in_date.substr(5, 2) + "/" + data[i].check_in_date.substr(0, 4)
                         };
 
                         _this.table_rows.push(single_item);
@@ -70,186 +195,143 @@ var vueinst = new Vue({
             };
 
             //specify the type of request and create a router
-            xhttp.open("GET", "/users/history", true);
+            xhttp.open("GET", "/users/get_user_history", true);
             xhttp.send();
         },
 
-        submit_code: function() {
+        get_user_data: function() {
             var xhttp = new XMLHttpRequest();
             var _this = this;
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                    // Typical action to be performed when the document is ready:
-                    var data = this.responseText;
-                    document.getElementById('check_in_help').innerHTML = data;
+                    if (window.location.pathname.indexOf("users.html") === -1) {
+                        window.location.href = "/users.html";
+                    } else {
+                        let received_data = JSON.parse(this.responseText);
+                        _this.logged_in_user.first_name = _this.edited_user.first_name = received_data[0].first_name;
+                        _this.logged_in_user.last_name = _this.edited_user.last_name = received_data[0].last_name;
+                        _this.logged_in_user.username = _this.edited_user.username = received_data[0].username;
+                        _this.logged_in_user.email = _this.edited_user.email = received_data[0].email;
+                        _this.logged_in_user.dob_day = _this.edited_user.dob_day = received_data[0].dob.substr(8, 2);
+                        _this.logged_in_user.dob_month = _this.edited_user.dob_month = received_data[0].dob.substr(5, 2);
+                        _this.logged_in_user.dob_year = _this.edited_user.dob_year = received_data[0].dob.substr(0, 4);
+                    }
+                } else if (this.readyState == 4 && this.status >= 400) {
+                    if (window.location.pathname !== "/" && window.location.pathname.indexOf("index.html") === -1) {
+                        window.location.href = "/index.html";
+                    }
                 }
             };
 
-            //specify the type of request and create a router
-            xhttp.open("POST", "/users/test_code", true);
-            xhttp.setRequestHeader("Content-type", "application/json");
-            xhttp.send(JSON.stringify(this.inputted_code));
-        },
-
-        get_markers: function() {
-            var xhttp = new XMLHttpRequest();
-            var _this = this;
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                   // Typical action to be performed when the document is ready:
-                    let markers = JSON.parse(this.responseText);
-                    vueinst.map_markers = markers;
-
-                    // for (var i=0; i<markers.length; i++)
-                    for (let m of markers)
-                        m.marker = new mapboxgl.Marker()
-                            .setLngLat([m.longitude, m.latitude])
-                            .addTo(map);
-                    // markers: each item has id, longitude, latitude, marker (will be added to the page)
-                    // vueinst.markers=markers;
-                }
-            };
-
-            //specify the type of request and create a router
-            xhttp.open("GET", "/retrieve_markers", true);
+            xhttp.open("GET", "/users/find_user_data", true);
             xhttp.send();
         },
 
-        // display the user profile
-        user_profile: function() {
-            var xhttp = new XMLHttpRequest();
-            var _this = this;
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                   // Typical action to be performed when the document is ready:
-                    let user_data = JSON.parse(this.responseText);
-                    _this.logged_in_user.first_name = user_data[0].first_name;
-                    _this.logged_in_user.last_name = user_data[0].last_name;
-                    _this.logged_in_user.dob = user_data[0].dob;
-                    _this.logged_in_user.email = user_data[0].email;
-                    _this.logged_in_user.username = user_data[0].username;
-                }
-            };
-
-            //specify the type of request and create a router
-            xhttp.open("GET", "/users/display_user_profile", true);
-            xhttp.send();
-        },
-
-        // update the user data
         update_user_data: function() {
             var xhttp = new XMLHttpRequest();
             var _this = this;
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                   // Typical action to be performed when the document is ready:
-                    let data = this.responseText;
-                    document.getElementById('edit_help').innerHTML = data;
+                    var data = JSON.parse(this.responseText);
+                    _this.edit_status = data;
+                    if (data.name === 0 && data.username === 0 && data.email === 0 && data.dob === 0 && data.password === 0 && data.server === 0) {
+                        _this.logged_in_user.first_name = _this.edited_user.first_name;
+                        _this.logged_in_user.last_name = _this.edited_user.last_name;
+                        _this.logged_in_user.username = _this.edited_user.username;
+                        _this.logged_in_user.email = _this.edited_user.email;
+                        _this.logged_in_user.dob_day = _this.edited_user.dob_day;
+                        _this.logged_in_user.dob_month = _this.edited_user.dob_month;
+                        _this.logged_in_user.dob_year = _this.edited_user.dob_year;
+                        _this.edited_user.confirm_password = "";
+                        _this.profile_mode = 0;
+                    }
                 }
             };
 
-            //specify the type of request and create a router
-            xhttp.open("POST", "/users/modify_user_data", true);
+            xhttp.open("POST", "/users/save_updated_user_data", true);
             xhttp.setRequestHeader("Content-type", "application/json");
-            xhttp.send(JSON.stringify(this.logged_in_user));
+            xhttp.send(JSON.stringify(this.edited_user));
         },
 
-        login: function() {
+        reset_edited_user: function() {
+            this.edited_user.first_name = this.logged_in_user.first_name;
+            this.edited_user.last_name = this.logged_in_user.last_name;
+            this.edited_user.username = this.logged_in_user.username;
+            this.edited_user.email = this.logged_in_user.email;
+            this.edited_user.dob_day = this.logged_in_user.dob_day;
+            this.edited_user.dob_month = this.logged_in_user.dob_month;
+            this.edited_user.dob_year = this.logged_in_user.dob_year;
+            this.edited_user.confirm_password = "";
+        },
+
+        reset_edit_status: function() {
+            this.edit_status.name = -1;
+            this.edit_status.username = -1;
+            this.edit_status.email = -1;
+            this.edit_status.dob = -1;
+            this.edit_status.password = -1;
+            this.edit_status.server = -1;
+        },
+
+        update_user_password: function() {
             var xhttp = new XMLHttpRequest();
             var _this = this;
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                    // Typical action to be performed when the document is ready:
                     var data = JSON.parse(this.responseText);
-                    _this.login_status = data;
-                    window.location.href = data.redirect_path;
+                    _this.change_status = data;
+                    if (data.current_password === 0 && data.new_password === 0 && data.server === 0) {
+                        _this.changed_password.current_password = "";
+                        _this.changed_password.new_password = "";
+                        _this.changed_password.confirm_new_password = "";
+                        _this.profile_mode = 0;
+                    }
                 }
             };
 
-            //specify the type of request and create a router
-            xhttp.open("POST", "/login_user", true);
+            xhttp.open("POST", "/users/save_updated_user_password", true);
             xhttp.setRequestHeader("Content-type", "application/json");
-            xhttp.send(JSON.stringify(this.current_user));
+            xhttp.send(JSON.stringify(this.changed_password));
         },
 
-        register: function() {
+        reset_changed_password: function() {
+            this.changed_password.current_password = "";
+            this.changed_password.new_password = "";
+            this.changed_password.confirm_new_password = "";
+        },
+
+        reset_change_status: function() {
+            this.change_status.current_password = -1;
+            this.change_status.new_password = -1;
+            this.change_status.server = -1;
+        },
+
+        log_out: function() {
             var xhttp = new XMLHttpRequest();
-            var _this = this;
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                    // Typical action to be performed when the document is ready:
-                    var data = JSON.parse(this.responseText);
-                    _this.registration_status = data;
-                    window.location.href = data.redirect_path;
+                    window.location.href = "/index.html";
                 }
             };
 
-            //specify the type of request and create a router
-            xhttp.open("POST", "/register_user", true);
-            xhttp.setRequestHeader("Content-type", "application/json");
-            xhttp.send(JSON.stringify(this.new_user));
+            xhttp.open("POST", "/users/log_out", true);
+            xhttp.send();
         },
     }
 });
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYXVqdXN0aW4xNCIsImEiOiJja3Q0OWs0cTMwMTA4MnFudnV0NHJldW4xIn0.XedxOHoHgKor-GRMYn4YsQ';
-    const map = new mapboxgl.Map({
-        container: 'map', // container ID
-        style: 'mapbox://styles/mapbox/streets-v11', // style URL
-        center: [106.70961683206141, 10.728857016728918], // starting position [lng, lat]
-        zoom: 12 // starting zoom
-    });
+const map = new mapboxgl.Map({
+    container: 'map', // container ID
+    style: 'mapbox://styles/mapbox/streets-v11', // style URL
+    center: [106.70961683206141, 10.728857016728918], // starting position [lng, lat]
+    zoom: 13 // starting zoom
+});
 
-function onSignIn(googleUser) {
-    var profile = googleUser.getBasicProfile();
-    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-    console.log('Name: ' + profile.getName());
-    console.log('Image URL: ' + profile.getImageUrl());
-    console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-    var id_token = {token: googleUser.getAuthResponse().id_token};
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status < 400) {
-           // Typical action to be performed when the document is ready:
-            var data = JSON.parse(this.responseText);
-            window.location.href = data.redirect_path;
-        } else if (this.readyState == 4 && this.status >= 400) {
-            alert("Login failed");
-        }
-    };
-
-    //specify the type of request and create a router
-    xhttp.open("POST", "/login_user", true);
-    xhttp.setRequestHeader("Content-type", "application/json");
-    xhttp.send(JSON.stringify(id_token));
+if (window.location.pathname === "/" || window.location.pathname.indexOf("index.html") >= 0 || window.location.pathname.indexOf("users.html") >= 0) {
+    vueinst.get_markers();
 }
-
-function signOut() {
-    var auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
-        console.log('User signed out.');
-        window.location.href = "/index.html";
-    });
+vueinst.get_user_data();
+if (window.location.pathname.indexOf("users.html") >= 0) {
+    vueinst.get_history();
 }
-
-function logout() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-           // Typical action to be performed when the document is ready:
-            var data = this.responseText;
-            if (data === "true") {
-                signOut();
-            } else {
-                window.location.href = "/index.html";
-            }
-
-        }
-    };
-
-    //specify the type of request and create a router
-    xhttp.open("POST", "/users/logout", true);
-    xhttp.send();
-}
-
-vueinst.get_markers();
