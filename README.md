@@ -7,7 +7,7 @@
 
 A website that tracks the movement of its users (who check in at certain areas) and lets users see areas with high COVID-19 activity (hotspots).
 
-![](https://media.giphy.com/media/fTxGpMeICh7lNOjBSw/giphy.gif)
+![Demonstration](https://media.giphy.com/media/fTxGpMeICh7lNOjBSw/giphy.gif)
 
 # Install
 
@@ -42,18 +42,18 @@ use COVID19;
 
 By default, there are a couple of user accounts you can use to log into the website.
 
-## John Doe
+### John Doe
 
 * Username: JohnDoe12
 * Password: asdf1234
 
-## Jane Doe
+### Jane Doe
 
 * Username: JaneDoe34
 * Password: zxcv5678
 
 # Author
 
-## Justin Le
+### Justin Le
 
 * Github: [@aujustin14](https://github.com/aujustin14)
